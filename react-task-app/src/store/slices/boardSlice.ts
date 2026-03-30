@@ -1,10 +1,32 @@
-import {createSlice} from "@reduxjs/toolkit"
-import type { IBoard } from "../../types";
+import {createSlice, type PayloadAction} from "@reduxjs/toolkit"
+import type { IBoard, IList, ITask } from "../../types";
+import { board } from "../../App.css";
 
 type TBoardsState = {
     modalActive: boolean;
     boardArray: IBoard[]
 }
+
+type TAddBoardAction = {
+    board: IBoard;
+}
+
+type TDleteListAction = {
+    boardId: string;
+    listId: string;
+}
+
+type TAddListAction = {
+    boardId: string;
+    list: IList;
+}
+
+type TAddTaskAction = {
+    boardId: string;
+    listId: string;
+    task: ITask;
+}
+
 const initialState : TBoardsState = {
     modalActive: false,
     boardArray: [
@@ -51,8 +73,57 @@ const boardsSlice = createSlice({
     name: 'boards',
     initialState,
     reducers: {
+        addBoard: (state, {payload}:PayloadAction<TAddBoardAction>)=>{
+            state.boardArray.push(payload.board)
+        },
 
+        addList: (state, {payload}: PayloadAction<TAddListAction>)=> {
+            state.boardArray.map(board => 
+                board.boardId === payload.boardId
+                ? {...board, lists : board.lists.push(payload.list)}
+                : board
+            )
+        },
+
+        addTask: (state, {payload}: PayloadAction<TAddTaskAction>)=>{
+            state.boardArray.map(board =>
+                board.boardId === payload.boardId
+                ? {
+                    ...board,
+                    lists: board.lists.map( list =>
+                        list.listId === payload.listId
+                        ? {
+                            ...list,
+                            tasks: list.tasks.push(payload.task)
+                        }
+                        : list
+                    )
+                }
+                : board
+            )
+        },
+
+        deleteList: (state, {payload}:PayloadAction<TDleteListAction>)=>{
+            state.boardArray = state.boardArray.map((board)=>(
+                board.boardId === payload.boardId
+                ?
+                {
+                    ...board,
+                    lists: board.lists.filter(
+                        list => list.listId !== payload.listId
+                    // lists 부분만 재정의해서 덮어씌우기 (리스트 삭제)
+                    )
+                }
+                :
+                board
+            ))
+        },
+
+        setModalActive: (state, {payload} : PayloadAction<boolean>) =>{
+            state.modalActive = payload
+        }
     }
 })
 
+export const {addBoard, deleteList, setModalActive, addList, addTask} = boardsSlice.actions;
 export const boardsReducer = boardsSlice.reducer; 

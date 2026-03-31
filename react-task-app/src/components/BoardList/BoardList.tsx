@@ -10,6 +10,7 @@ type TBoardListProps = {
   activeBoardId : string;
   setActiveBoardId : React.Dispatch<React.SetStateAction<string>>;
 }
+
 const BoardList : FC<TBoardListProps> = ({
     activeBoardId,
     setActiveBoardId

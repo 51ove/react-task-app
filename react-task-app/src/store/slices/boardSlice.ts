@@ -37,6 +37,14 @@ type TDeleteBoardAction = {
     boardId: string;
 }
 
+type TSortAction = {
+    boardIndex: number;
+    droppableIdStart: string;
+    droppableIdEnd: string;
+    droppableIndexStart: number;
+    droppableIndexEnd: number;
+    draggableId: string; // 아이템 아이디 (==tasks 아이디)
+}
 
 const initialState : TBoardsState = {
     modalActive: false,
@@ -190,9 +198,48 @@ const boardsSlice = createSlice({
 
         setModalActive: (state, {payload} : PayloadAction<boolean>) =>{
             state.modalActive = payload
+        },
+
+        sort : (state, {payload} : PayloadAction<TSortAction>) => {
+            // 같은 리스트
+            if(payload.droppableIdStart === payload.droppableIdEnd){
+                // 시작점 리스트 담기
+                const list = state.boardArray[payload.boardIndex].lists.find(
+                    list => list.listId === payload.droppableIdStart
+                )
+                
+                // 변경시키는 아이템을 배열에서 지워줌
+                // 지워진 아이템을 배열로 리턴 받음
+                const card = list?.tasks.splice(payload.droppableIndexStart, 1);
+
+                // 지워진 아이템 (같은 리스트 다른 인덱스에) 넣어주기
+                list?.tasks.splice(payload.droppableIndexEnd, 0, ...card!);
+            }
+
+            // 다른 리스트
+            if(payload.droppableIdStart !== payload.droppableIdEnd) {
+                // 시작점 리스트 담기
+                const listStart = state.boardArray[payload.boardIndex].lists.find(
+                    list => list.listId === payload.droppableIdStart
+                )
+                // 지워진 아이템
+                const card = listStart?.tasks.splice(payload.droppableIndexStart,1);
+
+                // 도착점 리스트 담기
+                const listEnd = state.boardArray[payload.boardIndex].lists.find(
+                    list => list.listId === payload.droppableIdEnd
+                )
+
+                // 도착점 리스트에 아이템 넣어주기
+                listEnd?.tasks.splice(payload.droppableIndexEnd, 0, ...card!)
+            }
         }
+
+
     }
 })
 
-export const {addBoard,deleteBoard, deleteList, deleteTask, updateTask, setModalActive, addList, addTask} = boardsSlice.actions;
+export const {sort, addBoard,deleteBoard, deleteList, deleteTask, updateTask, setModalActive, addList, addTask} = boardsSlice.actions;
+// boardsSlice.actions 안에는 액션 생성 함수들어있음
+// Redux Toolkit에서는 reducers 안에 쓴 함수 이름을 기반으로 액션 생성함수를 자동으로 만들어줌
 export const boardsReducer = boardsSlice.reducer; 

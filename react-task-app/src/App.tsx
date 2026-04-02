@@ -6,9 +6,10 @@ import ListContainer from './components/ListContainer/ListContainer';
 import { useTypedDispatch, useTypedSelector } from './hooks/redux';
 import EditModal from './components/EditModal/EditModal';
 import LoggerModal from './components/LoggerModal/LoggerModal';
-import { deleteBoard } from './store/slices/boardSlice';
+import { deleteBoard, sort } from './store/slices/boardSlice';
 import { addLog } from './store/slices/loggerSlice';
 import { v4 } from 'uuid';
+import { DragDropContext} from "@hello-pangea/dnd";
 
 function App() {
   const dispatch = useTypedDispatch();
@@ -20,7 +21,7 @@ function App() {
 
   const getActiveBoard = boards.filter(board => board.boardId === activeBoardId)[0] // active한(켜져있는) board의 객체
   
-  const lists = getActiveBoard.lists; // board 객체에서 lists 부분만
+  const lists = getActiveBoard.lists; // (활성화된) board 객체에서 lists 부분만
 
 
   const handleDeleteBoard = ()=>{
@@ -52,8 +53,47 @@ function App() {
     }
   }
 
+  const handleDragEnd = (result : any) => {
+    console.log(result);
+
+    const {destination, source, draggableId} = result;
+    console.log('lists', lists);
+
+    // 드래그 출발한 리스트
+    const sourceList = lists.filter(
+      list => list.listId === source.droppableId
+    )[0];
+    console.log('sourceList', sourceList);
+
+    dispatch(
+      sort({
+        boardIndex : boards.findIndex((board)=> board.boardId === activeBoardId),
+        droppableIdStart : source.droppableId,
+        droppableIdEnd : destination.droppableId,
+        droppableIndexStart : source.index,
+        droppableIndexEnd : destination.index,
+        draggableId: draggableId
+      })
+    )
+
+    dispatch(
+      addLog({
+        logId: v4(),
+        logMessage:
+          `리스트 "${sourceList.listName}"에서
+          리스트 "${lists.filter(list => list.listId === destination.droppableId)[0].listName}으로"
+          ${sourceList.tasks.filter(task => task.taskId === draggableId)[0].taskName}을 옮김
+          `,
+        logAuthor: "User",
+        logTimestamp: String(Date.now())
+      })
+    )
+
+  }
+
   return (
     <div className={appContainer}>
+      {/* 모달 */}
       {isLoggerOpen ? <LoggerModal setIsLoggerOpen={setIsLoggerOpen}/> : null}
       {modalActive ? <EditModal/> : null}
       
@@ -63,7 +103,9 @@ function App() {
       />
       
       <div className={board}>
-        <ListContainer lists = {lists} boardId = {getActiveBoard.boardId}></ListContainer>
+        <DragDropContext onDragEnd={handleDragEnd}>
+          <ListContainer lists = {lists} boardId = {getActiveBoard.boardId}></ListContainer>
+        </DragDropContext>
       </div>
 
       <div className={buttons}>

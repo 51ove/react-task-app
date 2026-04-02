@@ -1,4 +1,4 @@
-import React, { type FC } from 'react'
+import { type FC } from 'react'
 import List from '../List/List';
 import ActionButton from '../ActionButton/ActionButton';
 import { listsContainer } from './ListContainer.css';

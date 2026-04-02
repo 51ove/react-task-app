@@ -1,4 +1,4 @@
-import React, { useState, type ChangeEvent } from 'react'
+import { useState, type ChangeEvent } from 'react'
 import { FiX } from 'react-icons/fi'
 import { useTypedDispatch, useTypedSelector } from '../../hooks/redux'
 import { deleteTask, setModalActive, updateTask } from '../../store/slices/boardSlice';

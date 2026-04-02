@@ -1,4 +1,4 @@
-import React, { type FC } from 'react'
+import { type FC } from 'react'
 import { BsFillPersonFill } from 'react-icons/bs';
 import type { ILogItem } from '../../../types';
 import { author, date, logItemWrap, message } from './LogItem.css';

@@ -13,6 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - name: Install dependencies
         run: npm install
         working-directory: react-task-app
@@ -20,8 +21,10 @@ jobs:
       - name: Build
         run: npm run build
         working-directory: react-task-app
+
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_REACT_TSET_FIREBASE }}
           projectId: react-tset-firebase
+          entryPoint: react-task-app
